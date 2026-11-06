@@ -112,3 +112,19 @@ input[type="checkbox"] { width: 22px; min-height: 22px; height: 22px; accent-col
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
 td.num, th.num { text-align: right; }
+
+.mt { margin-top: 24px; }
+.mt0 { margin-top: 0; }
+.prewrap { white-space: pre-wrap; }
+textarea.short { min-height: 80px; }
+.ingredients { padding-left: 1.2rem; }
+.ingredients li { margin: 4px 0; }
+.ing-row { border: 1px solid var(--border); padding: 10px; margin: 0; box-shadow: none; }
+.ing-main { display: grid; grid-template-columns: 1fr 72px 80px 40px; gap: 6px; }
+.ing-extra { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 6px; margin-top: 6px; }
+.ing-extra input, .ing-extra select { min-height: 38px; font-size: 0.9rem; }
+.sticky-actions {
+  position: sticky; bottom: calc(64px + env(safe-area-inset-bottom)); background: var(--bg);
+  padding: 10px 0; border-top: 1px solid var(--border);
+}
+details > summary { cursor: pointer; min-height: 32px; }

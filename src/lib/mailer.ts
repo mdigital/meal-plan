@@ -48,7 +48,12 @@ class SesMailer implements Mailer {
 export function createMailer(config: Config): Mailer {
   if (config.email.logLinks) return new LogMailer();
   if (!config.email.sesRegion) {
-    throw new Error("Email is not configured: set SES_REGION (and AWS credentials) or EMAIL_LOG_LINKS=1");
+    console.error("Email is not configured: set SES_REGION and AWS credentials. Sign-in links will not be sent.");
+    return {
+      async send() {
+        throw new Error("Email is not configured");
+      },
+    };
   }
   return new SesMailer(config.email.sesRegion, config.email.from);
 }

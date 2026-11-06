@@ -4,6 +4,7 @@ import { consumeLoginToken, createLoginToken, LOGIN_TOKEN_TTL_MS, hashToken, new
 import { loginTokens } from "../src/db/schema.js";
 import { RateLimiter } from "../src/auth/rate-limit.js";
 import { safeNext } from "../src/routes/auth.js";
+import { sameSite } from "../src/auth/middleware.js";
 import { parseAllowedEmails } from "../src/config.js";
 
 describe("login tokens", () => {
@@ -63,7 +64,7 @@ describe("sign-in flow", () => {
     expect(sc).toMatch(/SameSite=Lax/i);
     expect(sc).toMatch(/Max-Age=2592000/);
 
-    const meals = await client.get("/meals");
+    const meals = await client.get("/settings");
     expect(meals.status).toBe(200);
     expect(await meals.text()).toContain("Signed in as Robin");
   });
@@ -91,8 +92,8 @@ describe("sign-in flow", () => {
     const t = setup();
     const robin = await signIn(t, ROBIN);
     const sam = await signIn(t, SAM);
-    expect(await (await robin.get("/meals")).text()).toContain("Robin");
-    expect(await (await sam.get("/meals")).text()).toContain("Sam");
+    expect(await (await robin.get("/settings")).text()).toContain("Signed in as Robin");
+    expect(await (await sam.get("/settings")).text()).toContain("Signed in as Sam");
   });
 
   it("rejects a reused or expired link", async () => {
@@ -141,6 +142,20 @@ describe("protection", () => {
     expect(res.status).toBe(403);
   });
 
+  it("accepts same-host posts even when the app sees http behind a proxy", async () => {
+    const t = setup();
+    const client = await signIn(t);
+    const res = await client.post("/logout", {}, { headers: { origin: "https://localhost", host: "localhost" } });
+    expect(res.status).toBe(303);
+  });
+
+  it("rejects posts the browser marks as cross-site", async () => {
+    const t = setup();
+    const client = await signIn(t);
+    const res = await client.post("/logout", {}, { headers: { "sec-fetch-site": "cross-site" } });
+    expect(res.status).toBe(403);
+  });
+
   it("rate-limits link requests per email", async () => {
     const t = setup();
     const client = t.client();
@@ -172,6 +187,13 @@ describe("protection", () => {
     expect(rl.hit("k", 1)).toBe(true);
     expect(rl.hit("k", 2)).toBe(false);
     expect(rl.hit("k", 1001)).toBe(true);
+  });
+
+  it("compares origins by host", () => {
+    expect(sameSite("https://meals.fly.dev", "meals.fly.dev", "https://meals.fly.dev")).toBe(true);
+    expect(sameSite("http://localhost:3456", "localhost:3456", "http://localhost:3000")).toBe(true);
+    expect(sameSite("https://evil.example", "meals.fly.dev", "https://meals.fly.dev")).toBe(false);
+    expect(sameSite("null", "meals.fly.dev", "https://meals.fly.dev")).toBe(false);
   });
 
   it("parses the allowlist", () => {

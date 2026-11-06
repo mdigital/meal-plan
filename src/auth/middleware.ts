@@ -52,7 +52,9 @@ export const csrfProtection = createMiddleware<AppEnv>(async (c, next) => {
 
   if (UNSAFE.has(c.req.method)) {
     const origin = c.req.header("origin");
-    if (origin && origin !== new URL(c.req.url).origin && origin !== config.appUrl) {
+    const fetchSite = c.req.header("sec-fetch-site");
+    const sameOriginFetch = fetchSite === "same-origin";
+    if (fetchSite === "cross-site" || (origin && !sameOriginFetch && !sameSite(origin, c.req.header("host"), config.appUrl))) {
       throw new HTTPException(403, { message: "Cross-origin request blocked" });
     }
     let sent = c.req.header("x-csrf-token");
@@ -70,6 +72,21 @@ export const csrfProtection = createMiddleware<AppEnv>(async (c, next) => {
   }
   await next();
 });
+
+/**
+ * True if the Origin header matches APP_URL or this request's Host. Compares
+ * hosts, not full origins, because behind Fly's proxy the app sees http://
+ * while the browser sends https://.
+ */
+export function sameSite(origin: string, host: string | undefined, appUrl: string): boolean {
+  if (origin === "null") return false;
+  try {
+    const o = new URL(origin);
+    return o.origin === new URL(appUrl).origin || (!!host && o.host === host);
+  } catch {
+    return false;
+  }
+}
 
 export const requireUser = createMiddleware<AppEnv>(async (c, next) => {
   if (!c.var.user) {

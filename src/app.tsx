@@ -7,6 +7,8 @@ import { csrfProtection, loadSession, requireUser } from "./auth/middleware.js";
 import { authRoutes } from "./routes/auth.js";
 import { Layout } from "./views/layout.js";
 import { pageRoutes } from "./routes/pages.js";
+import { mealRoutes } from "./routes/meals.js";
+import { foodRoutes } from "./routes/foods.js";
 
 export function createApp(deps: Deps) {
   const app = new Hono<AppEnv>();
@@ -26,6 +28,8 @@ export function createApp(deps: Deps) {
         frameAncestors: ["'none'"],
         baseUri: ["'self'"],
       },
+      // "no-referrer" makes browsers send Origin: null on form posts, which breaks the CSRF origin check.
+      referrerPolicy: "strict-origin-when-cross-origin",
       strictTransportSecurity: deps.config.production ? "max-age=31536000; includeSubDomains" : false,
     }),
   );
@@ -54,6 +58,8 @@ export function createApp(deps: Deps) {
 
   app.use("*", requireUser);
   app.route("/", pageRoutes);
+  app.route("/", mealRoutes);
+  app.route("/", foodRoutes);
 
   app.notFound((c) =>
     c.html(
