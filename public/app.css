@@ -128,3 +128,21 @@ textarea.short { min-height: 80px; }
   padding: 10px 0; border-top: 1px solid var(--border);
 }
 details > summary { cursor: pointer; min-height: 32px; }
+
+/* Browse filters */
+.search { margin-bottom: 10px; }
+.chips {
+  display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; margin: 0 -16px; padding-left: 16px; padding-right: 16px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chips.wrap { flex-wrap: wrap; margin: 0; padding: 8px 0; overflow: visible; }
+.chip {
+  flex: none; display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); text-decoration: none; font-size: 0.9rem; white-space: nowrap;
+}
+.chip[aria-current] { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); font-weight: 600; }
+.chip-sort { font-size: 0.85rem; }
+.tags-filter { margin-bottom: 4px; }
+.meal-card h3 { line-height: 1.25; }

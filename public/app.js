@@ -80,6 +80,12 @@
     });
   });
 
+  // Keep the selected filter chip visible in horizontally scrolling rows.
+  document.querySelectorAll(".chips [aria-current]").forEach((chip) => {
+    const row = chip.parentElement;
+    if (chip.offsetLeft + chip.offsetWidth > row.clientWidth) row.scrollLeft = chip.offsetLeft - 16;
+  });
+
   // Copy-to-clipboard buttons.
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-copy]");
