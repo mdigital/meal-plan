@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { createApp } from "../src/app.js";
+import { setup } from "./helpers.js";
 
 describe("app skeleton", () => {
   it("serves the health check", async () => {
-    const res = await createApp().request("/healthz");
+    const res = await setup().app.request("/healthz");
     expect(res.status).toBe(200);
     expect(await res.text()).toBe("ok");
   });
 
-  it("renders the home page", async () => {
-    const res = await createApp().request("/");
+  it("serves the PWA manifest", async () => {
+    const res = await setup().app.request("/manifest.webmanifest");
     expect(res.status).toBe(200);
-    expect(await res.text()).toContain("Meals");
+  });
+
+  it("sends signed-out visitors to sign in", async () => {
+    const res = await setup().app.request("/");
+    expect(res.headers.get("location")).toBe("/login");
   });
 });
