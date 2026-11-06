@@ -3,6 +3,7 @@ import type { Deps } from "./context.js";
 import { openDb } from "./db/index.js";
 import { RateLimiter } from "./auth/rate-limit.js";
 import { createMailer } from "./lib/mailer.js";
+import { AnthropicRecipeParser } from "./ai/parser.js";
 
 export function makeLimits() {
   return {
@@ -18,7 +19,7 @@ export function buildDeps(config: Config = loadConfig()): Deps {
     db: openDb(config.databasePath),
     mailer: createMailer(config),
     limits: makeLimits(),
-    parser: null,
+    parser: config.anthropicApiKey ? new AnthropicRecipeParser(config.anthropicApiKey) : null,
     now: Date.now,
   };
 }

@@ -53,7 +53,7 @@ pageRoutes.get("/meals", (c) => {
           <a class="btn small secondary" href="/foods">
             Foods
           </a>
-          <a class="btn small" href="/meals/new">
+          <a class="btn small" href="/import">
             + Add
           </a>
         </div>
@@ -122,7 +122,7 @@ pageRoutes.get("/meals", (c) => {
         <div class="card">
           <p>{filtered ? "No meals match." : "No meals yet."}</p>
           <p>
-            <a href="/meals/new">Add a meal</a>.
+            <a href="/import">Add a meal</a>.
           </p>
         </div>
       ) : null}

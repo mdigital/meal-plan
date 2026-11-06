@@ -162,6 +162,15 @@ mealRoutes.get("/meals/:id", (c) => {
         </details>
       ) : null}
 
+      {meal.source.trim() ? (
+        <form method="post" action={`/meals/${meal.id}/reestimate`}>
+          <Csrf token={c.var.csrf} />
+          <button type="submit" class="secondary small" data-busy="Estimating…">
+            Re-estimate nutrition with AI
+          </button>
+        </form>
+      ) : null}
+
       <p class="small muted">Added by {author?.name ?? "someone"}. Shared with the household.</p>
 
       <form method="post" action={`/meals/${meal.id}/delete`} data-confirm={`Delete "${meal.name}"? This can't be undone.`}>

@@ -9,6 +9,7 @@ import { Layout } from "./views/layout.js";
 import { pageRoutes } from "./routes/pages.js";
 import { mealRoutes } from "./routes/meals.js";
 import { foodRoutes } from "./routes/foods.js";
+import { importRoutes } from "./routes/import.js";
 
 export function createApp(deps: Deps) {
   const app = new Hono<AppEnv>();
@@ -60,6 +61,7 @@ export function createApp(deps: Deps) {
   app.route("/", pageRoutes);
   app.route("/", mealRoutes);
   app.route("/", foodRoutes);
+  app.route("/", importRoutes);
 
   app.notFound((c) =>
     c.html(
