@@ -98,8 +98,8 @@ describe("shopping list", () => {
   });
 
   it("warns about meals with no ingredient list", async () => {
-    const { client, t: setupT } = await ready();
-    const tandooriId = listMeals(setupT.deps.db).find((m) => m.name === "Tandoori chicken and dal")!.id;
+    const { client, t: setupT, robin } = await ready();
+    const tandooriId = createMeal(setupT.deps.db, meal("Mystery stew", 2, []), robin.id);
     const res = await client.post("/shopping", { meal: [String(tandooriId)], people: "2" });
     const page = await (await client.get(res.headers.get("location")!)).text();
     expect(page).toContain("have no ingredient list yet");

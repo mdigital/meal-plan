@@ -96,7 +96,9 @@ export function isStaple(name: string, staples: string[]): boolean {
     const staple = mergeKey(raw);
     if (!staple) continue;
     if (staple.includes("spice") || staple.includes("dried herb")) {
-      if (SPICE_WORDS.some((w) => key.includes(` ${mergeKey(w)}`))) return true;
+      // Garlic cloves are fresh produce, not the spice "cloves".
+      const spiceKey = key.replace(/ garlic clove/g, " ");
+      if (SPICE_WORDS.some((w) => spiceKey.includes(` ${mergeKey(w)}`))) return true;
       if (staple.includes("dried herb") && /\bdried\b/.test(key) && /\b(oregano|thyme|basil|rosemary|mint|parsley|dill|sage|tarragon|herb)/.test(key)) return true;
       continue;
     }

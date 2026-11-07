@@ -85,13 +85,13 @@ describe("merging", () => {
 
 describe("pantry staples", () => {
   it("matches the seeded staples", () => {
-    for (const name of ["Salt", "Sea salt flakes", "Black pepper", "Plain flour", "Brown sugar", "Unsalted butter", "Extra virgin olive oil", "Bay leaves", "Ground cumin", "Smoked paprika", "Dried oregano", "Garam masala"]) {
+    for (const name of ["Whole cloves", "Salt", "Sea salt flakes", "Black pepper", "Plain flour", "Brown sugar", "Unsalted butter", "Extra virgin olive oil", "Bay leaves", "Ground cumin", "Smoked paprika", "Dried oregano", "Garam masala"]) {
       expect(isStaple(name, STAPLES), name).toBe(true);
     }
   });
 
   it("doesn't catch look-alikes", () => {
-    for (const name of ["Red pepper", "Peanut butter", "Butter beans", "Sugar snap peas", "Fresh coriander", "Oregano leaves", "Chicken thigh"]) {
+    for (const name of ["Garlic cloves", "Red pepper", "Peanut butter", "Butter beans", "Sugar snap peas", "Fresh coriander", "Oregano leaves", "Chicken thigh"]) {
       expect(isStaple(name, STAPLES), name).toBe(false);
     }
   });

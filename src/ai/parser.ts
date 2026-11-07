@@ -51,7 +51,7 @@ Units: metric only. Convert cups, ounces, pounds and Fahrenheit to g, ml or °C.
 
 Nutrition: estimate kcal, protein and dietary fibre for each ingredient line for the quantity in the whole recipe, using standard food composition values (NZ FOODfiles or USDA). For drained tinned legumes use drained weight. Use cooked or raw values consistently with how the quantity is given. Then give per-serve totals that equal the sum of the lines divided by servings. Where a quantity is missing or vague, choose a typical amount, include it in the line, and list it in assumptions. "Oil for frying" and "salt to taste" can have a quantity of null and zero nutrition unless an amount is clear.
 
-Know these NZ products: Vogel's Original bread (about 42 g a slice, ~105 kcal, 4.5 g protein, 3 g fibre), Kalo Greek yoghurt (~88 kcal, 9.3 g protein per 100 g), Anchor Protein+ milk (~58 kcal, 5.5 g protein per 100 ml).
+Know these NZ products: Vogel's Original bread (about 42 g a slice, ~105 kcal, 4.5 g protein, 3 g fibre), Kalo Greek yoghurt (~90 kcal, 9 g protein per 100 g), Anchor Protein+ milk (~55 kcal, 6 g protein per 100 ml).
 
 Categories for shopping: produce (fresh fruit, veg, herbs), meat_fish (meat, poultry, fish and seafood, including tinned fish), dairy (milk, yoghurt, cheese, butter, eggs, tofu), pantry (tins, dry goods, oils, spices, sauces, grains, legumes), frozen, bakery (bread, wraps), other.
 
