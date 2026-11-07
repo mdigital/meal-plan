@@ -1,3 +1,4 @@
+import { scaleMethodText, scaleQuantity } from "../lib/scale.js";
 import { and, asc, desc, eq, like, or, sql, type SQL } from "drizzle-orm";
 import type { Db } from "../db/index.js";
 import {
@@ -168,4 +169,50 @@ export function deleteFood(db: Db, id: number): void {
 export function foodMacros(food: Food, amount: number) {
   const f = amount / 100;
   return { kcal: food.kcalPer100 * f, proteinG: food.proteinPer100 * f, fibreG: food.fibrePer100 * f };
+}
+
+/** The meal's ingredients and method rewritten for a different number of serves. Per-serve nutrition is unchanged. */
+export function scaledRecipe(meal: MealWithIngredients, servings: number) {
+  const factor = servings / (meal.servingsInRecipe || 1);
+  const r1 = (n: number | null) => (n == null ? null : Math.round(n * factor * 10) / 10);
+  return {
+    factor,
+    method: scaleMethodText(meal.method, factor),
+    ingredients: meal.ingredients.map((i) => {
+      // Under a tablespoon reads better in teaspoons: 0.5 tbsp -> 1.5 tsp.
+      const toTsp = i.unit === "tbsp" && i.quantity != null && i.quantity * factor < 1;
+      return {
+      name: i.name,
+      quantity: toTsp ? scaleQuantity(i.quantity, "tsp", factor * 3) : scaleQuantity(i.quantity, i.unit, factor),
+      unit: toTsp ? ("tsp" as const) : i.unit,
+      category: i.category,
+      kcal: r1(i.kcal),
+      proteinG: r1(i.proteinG),
+      fibreG: r1(i.fibreG),
+      };
+    }),
+  };
+}
+
+/** Saves the meal as a recipe for a different number of serves. */
+export function rescaleMeal(db: Db, id: number, servings: number): boolean {
+  const meal = getMeal(db, id);
+  if (!meal) return false;
+  const { method, ingredients } = scaledRecipe(meal, servings);
+  updateMeal(db, id, {
+    name: meal.name,
+    slot: meal.slot,
+    tags: meal.tags,
+    servingsInRecipe: servings,
+    method,
+    source: meal.source,
+    kcal: meal.kcal,
+    proteinG: meal.proteinG,
+    fibreG: meal.fibreG,
+    nutritionStatus: meal.nutritionStatus,
+    assumptions: meal.assumptions,
+    notes: meal.notes,
+    ingredients,
+  });
+  return true;
 }

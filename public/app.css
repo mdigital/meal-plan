@@ -229,3 +229,4 @@ textarea[readonly] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace
 .staples form { margin: 0; }
 .staples button { min-height: 36px; padding: 0 6px 0 12px; border-radius: 999px; font-weight: 400; background: var(--surface); color: var(--text); border-color: var(--border); }
 .grow { flex: 1; width: auto; }
+.serves-input { width: 90px; min-height: 40px; }

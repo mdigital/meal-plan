@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../context.js";
 import { SLOT_LABELS, type Slot } from "../db/schema.js";
-import { parseMealForm } from "../lib/forms.js";
-import { createMeal, deleteMeal, getMeal, updateMeal, type MealInput } from "../services/meals.js";
+import { parseMealForm, str } from "../lib/forms.js";
+import { createMeal, deleteMeal, getMeal, rescaleMeal, scaledRecipe, updateMeal, type MealInput } from "../services/meals.js";
 import { Csrf, Layout } from "../views/layout.js";
 import { MealForm } from "../views/meal-form.js";
 import { MacroLine, StatusBadge } from "../views/components.js";
@@ -77,8 +77,18 @@ mealRoutes.get("/meals/:id", (c) => {
   const meal = getMeal(db, mealId(c.req.param("id")));
   if (!meal) return c.notFound();
   const author = meal.createdByUserId ? db.select().from(users).where(eq(users.id, meal.createdByUserId)).get() : null;
+  const wanted = parseServes(c.req.query("serves"));
+  const previewing = wanted != null && wanted !== meal.servingsInRecipe;
+  const serves = previewing ? wanted : meal.servingsInRecipe;
+  const shown = previewing ? scaledRecipe(meal, wanted) : { ingredients: meal.ingredients, method: meal.method };
+  const quick = [...new Set([1, 2, 4, 6, meal.servingsInRecipe])].sort((a, b) => a - b);
   return c.html(
     <Layout title={meal.name} user={c.var.user} tab="meals">
+      {c.req.query("rescaled") ? (
+        <div class="flash" role="status">
+          Recipe saved for {fmtG(meal.servingsInRecipe)} serves.
+        </div>
+      ) : null}
       {c.req.query("saved") ? (
         <div class="flash" role="status">
           Saved.
@@ -121,11 +131,58 @@ mealRoutes.get("/meals/:id", (c) => {
         </a>
       </div>
 
-      {meal.ingredients.length ? (
+      {meal.ingredients.length || meal.method ? (
+        <section class="card mt" aria-labelledby="serves-h" id="serves">
+          <div class="row spread">
+            <h2 id="serves-h" class="mt0">
+              Serves {fmtG(serves)}
+            </h2>
+            <nav class="row" aria-label="Show the recipe for">
+              {quick.map((n) => (
+                <a
+                  class={`btn small ${n === serves ? "" : "secondary"}`}
+                  href={n === meal.servingsInRecipe ? `/meals/${meal.id}#serves` : `/meals/${meal.id}?serves=${n}#serves`}
+                  aria-current={n === serves ? "true" : undefined}
+                  aria-label={`Serves ${n}`}
+                >
+                  {fmtG(n)}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <form method="get" action={`/meals/${meal.id}#serves`} class="row mt-s">
+            <label for="serves-input" class="small">
+              Other
+            </label>
+            <input id="serves-input" name="serves" type="number" inputmode="decimal" min="0.5" max="50" step="0.5" value={fmtG(serves)} class="serves-input" />
+            <button type="submit" class="secondary small">
+              Show
+            </button>
+          </form>
+          {previewing ? (
+            <div class="notice small mt-s" role="status">
+              Showing amounts for {fmtG(serves)} serves. The saved recipe serves {fmtG(meal.servingsInRecipe)}. Nutrition per serve
+              doesn't change.
+              <form method="post" action={`/meals/${meal.id}/scale`} class="row mt-s">
+                <Csrf token={c.var.csrf} />
+                <input type="hidden" name="servings" value={String(serves)} />
+                <button type="submit" class="small">
+                  Save recipe as serves {fmtG(serves)}
+                </button>
+                <a class="btn secondary small" href={`/meals/${meal.id}#serves`}>
+                  Cancel
+                </a>
+              </form>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {shown.ingredients.length ? (
         <section>
           <h2>Ingredients</h2>
           <ul class="ingredients">
-            {meal.ingredients.map((i) => (
+            {shown.ingredients.map((i) => (
               <li>
                 {i.quantity != null ? (
                   <b>
@@ -140,10 +197,10 @@ mealRoutes.get("/meals/:id", (c) => {
         </section>
       ) : null}
 
-      {meal.method ? (
+      {shown.method ? (
         <section>
           <h2>Method</h2>
-          <div class="prewrap">{meal.method}</div>
+          <div class="prewrap">{shown.method}</div>
         </section>
       ) : null}
 
@@ -229,6 +286,22 @@ mealRoutes.post("/meals/:id", async (c) => {
   }
   updateMeal(db, meal.id, parsed.value);
   return c.redirect(`/meals/${meal.id}?saved=1`, 303);
+});
+
+/** Accepts 0.5 to 50 serves in half-serve steps. */
+export function parseServes(raw: string | undefined): number | null {
+  const n = Number((raw ?? "").replace(",", "."));
+  if (!raw || !Number.isFinite(n) || n < 0.5 || n > 50) return null;
+  return Math.round(n * 2) / 2;
+}
+
+mealRoutes.post("/meals/:id/scale", async (c) => {
+  const { db } = c.var.deps;
+  const id = mealId(c.req.param("id"));
+  const servings = parseServes(str(await c.req.parseBody(), "servings"));
+  if (servings == null) return c.redirect(`/meals/${id}#serves`, 303);
+  if (!rescaleMeal(db, id, servings)) return c.notFound();
+  return c.redirect(`/meals/${id}?rescaled=1#serves`, 303);
 });
 
 mealRoutes.post("/meals/:id/delete", (c) => {
