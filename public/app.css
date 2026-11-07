@@ -206,3 +206,26 @@ label.ef { display: flex; flex-direction: column; gap: 2px; margin: 0; font-weig
 .ing-main { align-items: end; }
 .ing-remove { align-self: end; min-height: 44px; }
 .ing-extra { align-items: end; }
+
+/* Shopping list */
+.mt-s { margin-top: 8px; }
+.check-row { font-weight: 400; min-height: 44px; }
+.shop-section h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.shop-list { list-style: none; padding: 4px 12px; margin: 0; }
+.shop-list li + li { border-top: 1px solid var(--border); }
+.shop-item { margin: 0; }
+.check {
+  width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 52px; padding: 6px 0;
+  background: transparent; color: var(--text); border: 0; font-weight: 400; border-radius: 0;
+}
+.check .box { flex: none; width: 24px; height: 24px; border: 2px solid var(--brand); border-radius: 6px; display: grid; place-items: center; }
+.check[aria-checked="true"] .box { background: var(--brand); }
+.check[aria-checked="true"] .box::after { content: ""; width: 6px; height: 12px; border: solid var(--brand-ink); border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.check .item-name { flex: 1; }
+.check .item-qty { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.check[aria-checked="true"] .item-name, .check[aria-checked="true"] .item-qty { text-decoration: line-through; color: var(--muted); }
+textarea[readonly] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+.staples { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.staples form { margin: 0; }
+.staples button { min-height: 36px; padding: 0 6px 0 12px; border-radius: 999px; font-weight: 400; background: var(--surface); color: var(--text); border-color: var(--border); }
+.grow { flex: 1; width: auto; }

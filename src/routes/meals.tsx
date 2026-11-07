@@ -116,6 +116,9 @@ mealRoutes.get("/meals/:id", (c) => {
         <a class="btn secondary" href={`/meals/${meal.id}/edit`}>
           Edit
         </a>
+        <a class="btn secondary" href={`/shopping/new?meal=${meal.id}`}>
+          Shop
+        </a>
       </div>
 
       {meal.ingredients.length ? (

@@ -89,6 +89,33 @@
     if (chip.offsetLeft + chip.offsetWidth > row.clientWidth) row.scrollLeft = chip.offsetLeft - 16;
   });
 
+  // Shopping list: tick items without reloading the page.
+  document.addEventListener("submit", async (e) => {
+    const form = e.target;
+    if (!form.matches || !form.matches("form[data-toggle-item]")) return;
+    e.preventDefault();
+    const btn = form.querySelector(".check");
+    const hidden = form.querySelector("[name=checked]");
+    const next = hidden.value === "1";
+    btn.setAttribute("aria-checked", String(next)); // optimistic
+    try {
+      const res = await fetch(form.action, {
+        method: "POST",
+        headers: { accept: "application/json", "x-csrf-token": form.querySelector("[name=_csrf]").value },
+        body: new URLSearchParams(new FormData(form)),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      hidden.value = next ? "0" : "1";
+    } catch {
+      btn.setAttribute("aria-checked", String(!next));
+      return;
+    }
+    const all = document.querySelectorAll("form[data-toggle-item] .check");
+    const done = document.querySelectorAll('form[data-toggle-item] .check[aria-checked="true"]');
+    const p = document.querySelector("[data-progress]");
+    if (p) p.textContent = `${done.length} of ${all.length} ticked.`;
+  }, true);
+
   // Copy-to-clipboard buttons.
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-copy]");

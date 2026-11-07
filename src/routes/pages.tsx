@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { users } from "../db/schema.js";
+import { addStaple, listStaples, removeStaple } from "../services/shopping.js";
 import { num, str } from "../lib/forms.js";
 import type { AppEnv } from "../context.js";
 import { SLOTS, SLOT_LABELS, type Slot } from "../db/schema.js";
@@ -137,6 +138,7 @@ pageRoutes.get("/meals", (c) => {
 
 pageRoutes.get("/settings", (c) => {
   const user = c.var.user!;
+  const staples = listStaples(c.var.deps.db, user.id);
   return c.html(
     <Layout title="Settings" user={user} tab="settings">
       <h1>Settings</h1>
@@ -164,6 +166,32 @@ pageRoutes.get("/settings", (c) => {
         </div>
         <button type="submit">Save targets</button>
       </form>
+      <section class="card mt" aria-labelledby="staples-h">
+        <h2 id="staples-h" class="mt0">
+          Pantry staples
+        </h2>
+        <p class="small muted">Left off shopping lists unless you choose to show them. Tap one to remove it.</p>
+        <ul class="staples">
+          {staples.map((s) => (
+            <li>
+              <form method="post" action={`/settings/staples/${s.id}/delete`}>
+                <Csrf token={c.var.csrf} />
+                <button type="submit" aria-label={`Remove ${s.name}`}>
+                  {s.name} <span aria-hidden="true">✕</span>
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <form method="post" action="/settings/staples" class="row">
+          <Csrf token={c.var.csrf} />
+          <label for="staple" class="sr-only">
+            New staple
+          </label>
+          <input id="staple" name="name" placeholder="e.g. Soy sauce" maxlength={60} required class="grow" />
+          <button type="submit">Add</button>
+        </form>
+      </section>
       <p class="mt">Signed in as {user.name} ({user.email}).</p>
       <form method="post" action="/logout">
         <Csrf token={c.var.csrf} />
@@ -193,4 +221,14 @@ pageRoutes.post("/settings/targets", async (c) => {
     .where(eq(users.id, c.var.user!.id))
     .run();
   return c.redirect("/settings?saved=1", 303);
+});
+
+pageRoutes.post("/settings/staples", async (c) => {
+  addStaple(c.var.deps.db, c.var.user!.id, str(await c.req.parseBody(), "name"));
+  return c.redirect("/settings#staples-h", 303);
+});
+
+pageRoutes.post("/settings/staples/:id/delete", (c) => {
+  removeStaple(c.var.deps.db, c.var.user!.id, Number(c.req.param("id")) || -1);
+  return c.redirect("/settings#staples-h", 303);
 });

@@ -11,6 +11,7 @@ import { mealRoutes } from "./routes/meals.js";
 import { foodRoutes } from "./routes/foods.js";
 import { importRoutes } from "./routes/import.js";
 import { dayRoutes } from "./routes/days.js";
+import { shoppingRoutes } from "./routes/shopping.js";
 
 export function createApp(deps: Deps) {
   const app = new Hono<AppEnv>();
@@ -76,6 +77,7 @@ export function createApp(deps: Deps) {
   app.route("/", foodRoutes);
   app.route("/", importRoutes);
   app.route("/", dayRoutes);
+  app.route("/", shoppingRoutes);
 
   app.notFound((c) =>
     c.html(
