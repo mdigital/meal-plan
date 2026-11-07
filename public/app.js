@@ -1,5 +1,12 @@
 // Progressive enhancement only: every page works without this file.
 (() => {
+  document.documentElement.classList.add("js");
+
+  // Day builder: save a changed amount straight away.
+  document.addEventListener("change", (e) => {
+    const form = e.target.closest && e.target.closest("form[data-autosubmit]");
+    if (form && e.target.matches("input")) form.requestSubmit();
+  });
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
   }

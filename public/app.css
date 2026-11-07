@@ -146,3 +146,56 @@ details > summary { cursor: pointer; min-height: 32px; }
 .chip-sort { font-size: 0.85rem; }
 .tags-filter { margin-bottom: 4px; }
 .meal-card h3 { line-height: 1.25; }
+
+/* Targets */
+.targets { display: grid; gap: 10px; }
+.target-status { color: var(--muted); }
+.target-over .target-status { color: var(--over); font-weight: 700; }
+.target-ok.target .target-status { color: var(--ok); }
+.bar { height: 10px; border-radius: 999px; background: var(--border); overflow: hidden; margin-top: 4px; }
+.bar > span { display: block; height: 100%; background: var(--brand); border-radius: 999px; }
+.target-over .bar > span { background: var(--over); }
+.target-todo .bar > span { background: var(--accent); }
+.w-0 { width: 0%; }
+.w-5 { width: 5%; }
+.w-10 { width: 10%; }
+.w-15 { width: 15%; }
+.w-20 { width: 20%; }
+.w-25 { width: 25%; }
+.w-30 { width: 30%; }
+.w-35 { width: 35%; }
+.w-40 { width: 40%; }
+.w-45 { width: 45%; }
+.w-50 { width: 50%; }
+.w-55 { width: 55%; }
+.w-60 { width: 60%; }
+.w-65 { width: 65%; }
+.w-70 { width: 70%; }
+.w-75 { width: 75%; }
+.w-80 { width: 80%; }
+.w-85 { width: 85%; }
+.w-90 { width: 90%; }
+.w-95 { width: 95%; }
+.w-100 { width: 100%; }
+.totals-card { position: sticky; top: 0; z-index: 5; }
+.targets.compact .bar { height: 6px; }
+
+/* Day builder */
+.slot-section { margin-top: 18px; }
+.slot-head { display: flex; justify-content: space-between; align-items: center; }
+.slot-head h2 { margin: 0; }
+.entry { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.entry:last-child { border-bottom: 0; }
+.entry-name { font-weight: 600; }
+.entry-controls { display: flex; gap: 6px; align-items: center; grid-column: 1 / -1; }
+.entry-controls input { width: 84px; min-height: 40px; }
+.entry-controls .unit { color: var(--muted); font-size: 0.9rem; }
+.empty-slot { color: var(--muted); font-size: 0.9rem; padding: 6px 0; }
+.pick-list form { margin: 0; }
+.pick { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 4px; text-align: left; background: var(--surface); color: var(--text); border: 1px solid var(--border); font-weight: 400; padding: 10px 12px; min-height: 56px; }
+.pick .macros { font-size: 0.85rem; color: var(--muted); }
+.pick .add { color: var(--brand); font-weight: 700; align-self: center; }
+.js .js-hide { display: none; }
+button.is-current, button.secondary.is-current { background: var(--brand); color: var(--brand-ink); }
+fieldset { border: 1px solid var(--border); border-radius: var(--radius); }
+fieldset label.row { font-weight: 400; min-height: 44px; }

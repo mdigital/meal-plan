@@ -1,4 +1,9 @@
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { users } from "../db/schema.js";
+import { num, str } from "../lib/forms.js";
 import type { AppEnv } from "../context.js";
 import { SLOTS, SLOT_LABELS, type Slot } from "../db/schema.js";
 import { allTags, listMeals, type MealQuery, type MealSort } from "../services/meals.js";
@@ -130,11 +135,36 @@ pageRoutes.get("/meals", (c) => {
   );
 });
 
-pageRoutes.get("/settings", (c) =>
-  c.html(
-    <Layout title="Settings" user={c.var.user} tab="settings">
+pageRoutes.get("/settings", (c) => {
+  const user = c.var.user!;
+  return c.html(
+    <Layout title="Settings" user={user} tab="settings">
       <h1>Settings</h1>
-      <p>Signed in as {c.var.user!.name}.</p>
+      {c.req.query("saved") ? (
+        <div class="flash" role="status">
+          Saved.
+        </div>
+      ) : null}
+      <form method="post" action="/settings/targets" class="card stack">
+        <Csrf token={c.var.csrf} />
+        <h2 class="mt0">Daily targets</h2>
+        <div class="grid-3">
+          <div class="field">
+            <label for="t-kcal">kcal</label>
+            <input id="t-kcal" name="kcal" inputmode="decimal" value={String(user.targetKcal)} />
+          </div>
+          <div class="field">
+            <label for="t-protein">Protein g</label>
+            <input id="t-protein" name="protein" inputmode="decimal" value={String(user.targetProteinG)} />
+          </div>
+          <div class="field">
+            <label for="t-fibre">Fibre g</label>
+            <input id="t-fibre" name="fibre" inputmode="decimal" value={String(user.targetFibreG)} />
+          </div>
+        </div>
+        <button type="submit">Save targets</button>
+      </form>
+      <p class="mt">Signed in as {user.name} ({user.email}).</p>
       <form method="post" action="/logout">
         <Csrf token={c.var.csrf} />
         <button class="secondary" type="submit">
@@ -142,5 +172,25 @@ pageRoutes.get("/settings", (c) =>
         </button>
       </form>
     </Layout>,
-  ),
-);
+  );
+});
+
+const targetsSchema = z.object({
+  kcal: z.number().finite().min(500).max(10000),
+  protein: z.number().finite().min(0).max(500),
+  fibre: z.number().finite().min(0).max(200),
+});
+
+pageRoutes.post("/settings/targets", async (c) => {
+  const body = await c.req.parseBody();
+  const parsed = targetsSchema.safeParse({ kcal: num(str(body, "kcal")), protein: num(str(body, "protein")), fibre: num(str(body, "fibre")) });
+  if (!parsed.success) {
+    throw new HTTPException(400, { message: "Targets must be numbers: kcal 500–10,000, protein 0–500 g, fibre 0–200 g." });
+  }
+  c.var.deps.db
+    .update(users)
+    .set({ targetKcal: parsed.data.kcal, targetProteinG: parsed.data.protein, targetFibreG: parsed.data.fibre })
+    .where(eq(users.id, c.var.user!.id))
+    .run();
+  return c.redirect("/settings?saved=1", 303);
+});
