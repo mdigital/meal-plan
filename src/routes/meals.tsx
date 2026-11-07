@@ -222,7 +222,7 @@ mealRoutes.get("/meals/:id", (c) => {
         </details>
       ) : null}
 
-      {meal.source.trim() ? (
+      {meal.ingredients.length || meal.method.trim() || meal.source.trim() ? (
         <form method="post" action={`/meals/${meal.id}/reestimate`}>
           <Csrf token={c.var.csrf} />
           <button type="submit" class="secondary small" data-busy="Estimating…">

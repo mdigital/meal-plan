@@ -184,4 +184,41 @@ describe("import flow", () => {
     expect(parser.calls).toEqual(["original pasted text"]);
     expect(getMeal(t.deps.db, id)!.kcal).toBe(1); // unchanged until saved
   });
+
+  it("re-estimates the meal as edited, not the original pasted text", async () => {
+    const parser = new FakeParser({ ...goodRecipe, servings: 2 });
+    const t = setup({ parser });
+    const client = await signIn(t);
+    const created = await client.post("/meals", {
+      name: "Snapper night", slot: "dinner", servings: "4", tags: "fish", kcal: "400", protein: "40", fibre: "10",
+      method: "1. Sear 680 g snapper.", notes: "Extra lemon", source: "ORIGINAL pasted recipe for 4", status_from: "manual", orig_totals: "0|0|0",
+      ing_name: ["Snapper fillets", "Spinach"], ing_qty: ["680", "400"], ing_unit: ["g", "g"], ing_cat: ["meat_fish", "produce"],
+      ing_kcal: ["", ""], ing_protein: ["", ""], ing_fibre: ["", ""],
+    });
+    const id = Number(created.headers.get("location")!.split("/").pop()!.split("?")[0]);
+    // Edit it: halve the recipe and swap spinach for kale.
+    await client.post(`/meals/${id}/scale`, { servings: "2" });
+    const meal = getMeal(t.deps.db, id)!;
+    await client.post(`/meals/${id}`, {
+      name: meal.name, slot: "dinner", servings: "2", tags: "fish", kcal: "400", protein: "40", fibre: "10",
+      method: meal.method, notes: meal.notes, source: meal.source, status_from: "manual", orig_totals: "0|0|0",
+      ing_name: ["Snapper fillets", "Kale"], ing_qty: ["340", "200"], ing_unit: ["g", "g"], ing_cat: ["meat_fish", "produce"],
+      ing_kcal: ["", ""], ing_protein: ["", ""], ing_fibre: ["", ""],
+    });
+
+    const html = await (await client.post(`/meals/${id}/reestimate`)).text();
+    const sent = parser.calls.at(-1)!;
+    expect(sent).toContain("Serves 2");
+    expect(sent).toContain("- 340 g Snapper fillets");
+    expect(sent).toContain("- 200 g Kale");
+    expect(sent).toContain("1. Sear 340 g snapper.");
+    expect(sent).toContain("Notes: Extra lemon");
+    expect(sent).not.toContain("ORIGINAL");
+    // The review keeps the user's name, method, notes and original text.
+    expect(html).toContain('value="Snapper night"');
+    expect(html).toContain("1. Sear 340 g snapper.");
+    expect(html).toContain("Extra lemon");
+    expect(html).toContain("ORIGINAL pasted recipe for 4");
+    expect(getMeal(t.deps.db, id)!.servingsInRecipe).toBe(2); // nothing saved until reviewed
+  });
 });

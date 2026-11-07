@@ -4,7 +4,7 @@ import type { AppEnv, Ctx } from "../context.js";
 import type { Db } from "../db/index.js";
 import { aiImports } from "../db/schema.js";
 import { aiRecipeToMeal, MAX_RECIPE_CHARS, RecipeParseError } from "../ai/parser.js";
-import { getMeal } from "../services/meals.js";
+import { getMeal, type MealWithIngredients } from "../services/meals.js";
 import { str } from "../lib/forms.js";
 import { Csrf, Layout } from "../views/layout.js";
 import { Errors } from "../views/components.js";
@@ -98,14 +98,30 @@ importRoutes.post("/import", async (c) => {
   );
 });
 
-/** Re-runs the estimate on a meal's stored recipe text and opens it for review. */
+/**
+ * The meal as it is now, written out for the AI: the current serves, ingredients,
+ * method and notes, so edits and rescaling are respected. Falls back to the
+ * original pasted text only when the meal has no ingredients or method.
+ */
+export function recipeAsText(meal: MealWithIngredients): string {
+  if (meal.ingredients.length === 0 && !meal.method.trim()) return meal.source.trim();
+  const lines = [meal.name, `Serves ${meal.servingsInRecipe}`, "", "Ingredients:"];
+  for (const i of meal.ingredients) {
+    const q = i.quantity == null ? "" : `${Math.round(i.quantity * 100) / 100}${i.unit === "whole" ? "" : ` ${i.unit}`} `;
+    lines.push(`- ${q}${i.name}`);
+  }
+  if (meal.method.trim()) lines.push("", "Method:", meal.method.trim());
+  if (meal.notes.trim()) lines.push("", `Notes: ${meal.notes.trim()}`);
+  return lines.join("\n");
+}
+
+/** Re-estimates nutrition for the meal as it is now and opens the result for review. */
 importRoutes.post("/meals/:id/reestimate", async (c) => {
   const meal = getMeal(c.var.deps.db, Number(c.req.param("id")) || -1);
   if (!meal) return c.notFound();
-  if (!meal.source.trim()) {
-    return c.redirect(`/meals/${meal.id}/edit`, 303);
-  }
-  const result = await runImport(c, meal.source);
+  const text = recipeAsText(meal);
+  if (!text) return c.redirect(`/meals/${meal.id}/edit`, 303);
+  const result = await runImport(c, text);
   if ("error" in result) {
     return c.html(
       <Layout title={meal.name} user={c.var.user} tab="meals">
@@ -118,7 +134,16 @@ importRoutes.post("/meals/:id/reestimate", async (c) => {
       422,
     );
   }
-  const draft = { ...result.meal, name: meal.name, notes: meal.notes, tags: meal.tags.length ? meal.tags : result.meal.tags };
+  // Keep what the user chose; only the ingredients' details and the nutrition are re-estimated.
+  const draft = {
+    ...result.meal,
+    name: meal.name,
+    slot: meal.slot,
+    notes: meal.notes,
+    tags: meal.tags.length ? meal.tags : result.meal.tags,
+    method: meal.method.trim() ? meal.method : result.meal.method,
+    source: meal.source,
+  };
   return c.html(
     <Layout title="Check the new estimate" user={c.var.user} tab="meals">
       <h1>Check the new estimate</h1>
