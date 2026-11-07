@@ -199,3 +199,10 @@ details > summary { cursor: pointer; min-height: 32px; }
 button.is-current, button.secondary.is-current { background: var(--brand); color: var(--brand-ink); }
 fieldset { border: 1px solid var(--border); border-radius: var(--radius); }
 fieldset label.row { font-weight: 400; min-height: 44px; }
+
+/* Eyebrow labels on compact fields */
+label.ef { display: flex; flex-direction: column; gap: 2px; margin: 0; font-weight: 400; min-width: 0; }
+.eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); line-height: 1.2; }
+.ing-main { align-items: end; }
+.ing-remove { align-self: end; min-height: 44px; }
+.ing-extra { align-items: end; }

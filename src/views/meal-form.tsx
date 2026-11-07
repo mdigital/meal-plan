@@ -23,34 +23,51 @@ function IngredientRow(props: { ing: IngredientInput; index: number }) {
     <fieldset class="ing-row card">
       <legend class="sr-only">Ingredient {n}</legend>
       <div class="ing-main">
-        <label class="sr-only" for={`ing-name-${n}`}>Ingredient {n} name</label>
-        <input id={`ing-name-${n}`} name="ing_name" placeholder="Ingredient" value={ing.name} />
-        <label class="sr-only" for={`ing-qty-${n}`}>Quantity</label>
-        <input id={`ing-qty-${n}`} name="ing_qty" inputmode="decimal" placeholder="Qty" value={v(ing.quantity)} />
-        <label class="sr-only" for={`ing-unit-${n}`}>Unit</label>
-        <select id={`ing-unit-${n}`} name="ing_unit">
-          {UNITS.map((u) => (
-            <option value={u} selected={u === ing.unit}>
-              {u}
-            </option>
-          ))}
-        </select>
-        <button type="button" class="secondary small" data-remove-row aria-label={`Remove ingredient ${n}`}>
+        <label class="ef">
+          <span class="eyebrow">Ingredient</span>
+          <input name="ing_name" value={ing.name} />
+        </label>
+        <label class="ef">
+          <span class="eyebrow">Qty</span>
+          <input name="ing_qty" inputmode="decimal" value={v(ing.quantity)} />
+        </label>
+        <label class="ef">
+          <span class="eyebrow">Unit</span>
+          <select name="ing_unit">
+            {UNITS.map((u) => (
+              <option value={u} selected={u === ing.unit}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" class="secondary small ing-remove" data-remove-row aria-label={`Remove ingredient ${n}`}>
           ✕
         </button>
       </div>
       <div class="ing-extra">
-        <label class="sr-only" for={`ing-cat-${n}`}>Category</label>
-        <select id={`ing-cat-${n}`} name="ing_cat">
-          {CATEGORIES.map((c) => (
-            <option value={c} selected={c === ing.category}>
-              {CATEGORY_LABELS[c]}
-            </option>
-          ))}
-        </select>
-        <input name="ing_kcal" inputmode="decimal" placeholder="kcal" aria-label="kcal for this line" value={v(ing.kcal)} />
-        <input name="ing_protein" inputmode="decimal" placeholder="P g" aria-label="Protein g for this line" value={v(ing.proteinG)} />
-        <input name="ing_fibre" inputmode="decimal" placeholder="F g" aria-label="Fibre g for this line" value={v(ing.fibreG)} />
+        <label class="ef">
+          <span class="eyebrow">Category</span>
+          <select name="ing_cat">
+            {CATEGORIES.map((c) => (
+              <option value={c} selected={c === ing.category}>
+                {CATEGORY_LABELS[c]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label class="ef">
+          <span class="eyebrow">kcal</span>
+          <input name="ing_kcal" inputmode="decimal" value={v(ing.kcal)} />
+        </label>
+        <label class="ef">
+          <span class="eyebrow">Protein g</span>
+          <input name="ing_protein" inputmode="decimal" value={v(ing.proteinG)} />
+        </label>
+        <label class="ef">
+          <span class="eyebrow">Fibre g</span>
+          <input name="ing_fibre" inputmode="decimal" value={v(ing.fibreG)} />
+        </label>
       </div>
     </fieldset>
   );
@@ -157,7 +174,7 @@ export function MealForm(props: MealFormProps) {
       </p>
 
       <h2>Ingredients</h2>
-      <p class="small muted">Quantities for the whole recipe. Nutrition per line is optional.</p>
+      <p class="small muted">Quantities and nutrition are for the whole recipe. Nutrition per line is optional.</p>
       <div class="stack" data-ing-list>
         {ingredients.map((ing, i) => (
           <IngredientRow ing={ing} index={i} />

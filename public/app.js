@@ -51,12 +51,8 @@
       if (t.matches("[data-add-row]")) {
         const row = tpl.content.firstElementChild.cloneNode(true);
         const n = list.children.length + 1;
-        row.querySelectorAll("[id]").forEach((el) => {
-          const id = el.id.replace(/\d+$/, String(n) + "-" + Date.now());
-          const label = row.querySelector(`label[for="${el.id}"]`);
-          if (label) label.setAttribute("for", id);
-          el.id = id;
-        });
+        row.querySelector("legend").textContent = `Ingredient ${n}`;
+        row.querySelector("[data-remove-row]").setAttribute("aria-label", `Remove ingredient ${n}`);
         list.appendChild(row);
         row.querySelector("input").focus();
       } else if (t.matches("[data-remove-row]")) {
