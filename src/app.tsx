@@ -17,6 +17,18 @@ export function createApp(deps: Deps) {
 
   app.get("/healthz", (c) => c.text("ok"));
 
+  // Send visitors on the default *.fly.dev address to the real domain (APP_URL),
+  // so sessions and magic links all live on one host.
+  app.use("*", async (c, next) => {
+    const canonical = new URL(deps.config.appUrl);
+    const host = c.req.header("host") ?? "";
+    if (deps.config.production && host.endsWith(".fly.dev") && host !== canonical.host && (c.req.method === "GET" || c.req.method === "HEAD")) {
+      const url = new URL(c.req.url);
+      return c.redirect(`${canonical.origin}${url.pathname}${url.search}`, 301);
+    }
+    await next();
+  });
+
   app.use(
     "*",
     secureHeaders({
