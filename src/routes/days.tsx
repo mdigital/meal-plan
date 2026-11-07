@@ -359,7 +359,7 @@ dayRoutes.get("/days/:id/add", (c) => {
             <input type="hidden" name="slot" value={slot} />
             <input type="hidden" name="meal_id" value={String(m.id)} />
             <input type="hidden" name="amount" value="1" />
-            <button type="submit" class="pick" aria-label={`Add ${m.name}, 1 serve`}>
+            <button type="submit" class="pick">
               <span>
                 <span class="entry-name">{m.name}</span>
                 <MacroLine m={m} />
@@ -382,7 +382,7 @@ dayRoutes.get("/days/:id/add", (c) => {
             <input type="hidden" name="slot" value={slot} />
             <input type="hidden" name="food_id" value={String(f.id)} />
             <input type="hidden" name="amount" value={String(f.defaultAmount)} />
-            <button type="submit" class="pick" aria-label={`Add ${f.name}, ${fmtG(f.defaultAmount)} ${f.unit}`}>
+            <button type="submit" class="pick">
               <span>
                 <span class="entry-name">
                   {f.name} <span class="muted small">{fmtG(f.defaultAmount)} {f.unit}</span>

@@ -1,3 +1,5 @@
+import { dirname, join } from "node:path";
+
 export type AllowedUser = { email: string; name: string };
 
 export type Config = {
@@ -13,6 +15,7 @@ export type Config = {
   };
   anthropicApiKey?: string;
   aiDailyCap: number;
+  backup: { dir: string; email?: string };
 };
 
 /**
@@ -52,5 +55,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     },
     anthropicApiKey: env.ANTHROPIC_API_KEY || undefined,
     aiDailyCap: Number(env.AI_DAILY_CAP ?? 20),
+    backup: {
+      dir: env.BACKUP_DIR || join(dirname(env.DATABASE_PATH || "./data/meals.db"), "backups"),
+      // Where the nightly backup is emailed. Defaults to the first allowlisted user; "off" disables.
+      email: env.BACKUP_EMAIL === "off" ? undefined : env.BACKUP_EMAIL || parseAllowedEmails(env.ALLOWED_EMAILS)[0]?.email,
+    },
   };
 }

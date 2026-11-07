@@ -1,4 +1,7 @@
 import { Hono } from "hono";
+import { readFileSync, rmSync } from "node:fs";
+import { basename, join } from "node:path";
+import { createBackup } from "../backup.js";
 import { HTTPException } from "hono/http-exception";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -192,6 +195,13 @@ pageRoutes.get("/settings", (c) => {
           <button type="submit">Add</button>
         </form>
       </section>
+      <section class="card mt">
+        <h2 class="mt0">Backup</h2>
+        <p class="small muted">A backup is made every night and emailed to the owner. You can also download one now.</p>
+        <a class="btn secondary" href="/settings/backup" download>
+          Download backup
+        </a>
+      </section>
       <p class="mt">Signed in as {user.name} ({user.email}).</p>
       <form method="post" action="/logout">
         <Csrf token={c.var.csrf} />
@@ -231,4 +241,16 @@ pageRoutes.post("/settings/staples", async (c) => {
 pageRoutes.post("/settings/staples/:id/delete", (c) => {
   removeStaple(c.var.deps.db, c.var.user!.id, Number(c.req.param("id")) || -1);
   return c.redirect("/settings#staples-h", 303);
+});
+
+pageRoutes.get("/settings/backup", async (c) => {
+  const { db, config, now } = c.var.deps;
+  const dir = join(config.backup.dir, "downloads");
+  const path = await createBackup(db, dir, new Date(now()));
+  const body = readFileSync(path);
+  rmSync(path, { force: true });
+  c.header("Content-Type", "application/gzip");
+  c.header("Content-Disposition", `attachment; filename="${basename(path)}"`);
+  c.header("Cache-Control", "no-store");
+  return c.body(body);
 });

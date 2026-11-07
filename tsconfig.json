@@ -14,5 +14,5 @@
     "types": ["node"],
     "resolveJsonModule": true
   },
-  "include": ["src", "tests", "scripts", "drizzle.config.ts", "vitest.config.ts"]
+  "include": ["src", "tests", "e2e", "drizzle.config.ts", "vitest.config.ts", "playwright.config.ts"]
 }

@@ -16,6 +16,7 @@ export function testConfig(overrides: Partial<Config> = {}): Config {
     allowedUsers: parseAllowedEmails(`${ROBIN}:Robin,${SAM}:Sam`),
     email: { from: "Meals <meals@example.com>", logLinks: false },
     aiDailyCap: 3,
+    backup: { dir: "/nonexistent", email: ROBIN },
     ...overrides,
   };
 }

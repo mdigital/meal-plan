@@ -1,4 +1,5 @@
 import { loadConfig, type Config } from "./config.js";
+import { applyStagedRestore } from "./backup.js";
 import type { Deps } from "./context.js";
 import { openDb } from "./db/index.js";
 import { RateLimiter } from "./auth/rate-limit.js";
@@ -14,6 +15,8 @@ export function makeLimits() {
 }
 
 export function buildDeps(config: Config = loadConfig()): Deps {
+  const kept = config.databasePath === ":memory:" ? null : applyStagedRestore(config.databasePath);
+  if (kept) console.log(`[restore] restored the staged backup. The previous database is kept at ${kept}`);
   return {
     config,
     db: openDb(config.databasePath),

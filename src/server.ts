@@ -3,6 +3,7 @@ import { createApp } from "./app.js";
 import { buildDeps } from "./deps.js";
 import { purgeExpired } from "./auth/tokens.js";
 import { seedIfNeeded } from "./seed.js";
+import { startBackupSchedule } from "./jobs.js";
 
 const deps = buildDeps();
 const port = Number(process.env.PORT ?? 3000);
@@ -13,6 +14,7 @@ if (deps.config.allowedUsers.length === 0) console.warn("ALLOWED_EMAILS is empty
 if (seedIfNeeded(deps.db)) console.log("Loaded seed meals and foods.");
 purgeExpired(deps.db);
 setInterval(() => purgeExpired(deps.db), 60 * 60 * 1000).unref();
+if (deps.config.production || process.env.BACKUP_SCHEDULE === "1") startBackupSchedule(deps);
 
 const server = serve({ fetch: app.fetch, port, hostname: "0.0.0.0" }, (info) => {
   console.log(`listening on http://0.0.0.0:${info.port}`);

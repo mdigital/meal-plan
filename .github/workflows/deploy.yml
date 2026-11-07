@@ -27,8 +27,22 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+        env:
+          CI: "1"
+
   deploy:
-    needs: test
+    needs: [test, e2e]
     # Deploy on every push to main or the build branch, or when run by hand with deploy=true.
     if: github.event_name == 'push' || inputs.deploy
     runs-on: ubuntu-latest
